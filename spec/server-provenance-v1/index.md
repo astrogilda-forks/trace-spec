@@ -7,6 +7,8 @@
 | Anchoring | [Registry Anchor Format v1](https://trace.agentrust-io.com/spec/registry-anchor-v1/index.md) |
 | License   | CC BY 4.0                                                                                    |
 
+**In plain terms.** MCP servers are the tool providers an AI agent calls. This format lets someone sign a statement about one server (what it is and which tools it offers) so others can check who said it. It is for people who publish or vet MCP servers, and it is a draft.
+
 A signed statement **about** an MCP server: what it is, what tools it exposes, who is saying so, and how much that is worth.
 
 ## 0. What this is not
@@ -74,18 +76,18 @@ At least one MUST be present. Both SHOULD be present where both are known: an op
 }
 ```
 
-| Field                     | Required                      | Meaning                                                                                                                                                          |
-| ------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `format`                  | yes                           | This document's identifier and version                                                                                                                           |
-| `kind`                    | yes                           | §1                                                                                                                                                               |
-| `issued_at`               | yes                           | Unix seconds when this record was signed                                                                                                                         |
-| `identity`                | yes                           | §2; `artifact`, `endpoint`, or both                                                                                                                              |
-| `publisher`               | yes                           | DID or SPIFFE URI of the signer. Not a display name: a name is not resolvable and a verifier cannot check one                                                    |
-| `tool_catalog.hash`       | yes                           | Digest over the canonical tool list (§4)                                                                                                                         |
-| `tool_catalog.tool_count` | yes                           | Number of tools. Redundant with the hash by design: a consumer that sees a plausible count and an unexpected hash learns more than one that sees only a mismatch |
-| `attestation`             | when `kind` is `tee-attested` | The evidence, in the shape TRACE v0.2 §3.1 `runtime` uses. `null` otherwise                                                                                      |
-| `cnf.jwk`                 | yes                           | Public key the signature verifies under                                                                                                                          |
-| `signature`               | yes                           | Over the RFC 8785 (JCS) canonical form with `signature` absent                                                                                                   |
+| Field                     | Required                      | Meaning                                                                                                                                                                                |
+| ------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`                  | yes                           | This document's identifier and version                                                                                                                                                 |
+| `kind`                    | yes                           | §1                                                                                                                                                                                     |
+| `issued_at`               | yes                           | Non-negative integer: Unix seconds when this record was signed                                                                                                                         |
+| `identity`                | yes                           | §2; `artifact`, `endpoint`, or both                                                                                                                                                    |
+| `publisher`               | yes                           | DID or SPIFFE URI of the signer. Not a display name: a name is not resolvable and a verifier cannot check one                                                                          |
+| `tool_catalog.hash`       | yes                           | Digest over the canonical tool list (§4)                                                                                                                                               |
+| `tool_catalog.tool_count` | yes                           | Non-negative integer: number of tools. Redundant with the hash by design: a consumer that sees a plausible count and an unexpected hash learns more than one that sees only a mismatch |
+| `attestation`             | when `kind` is `tee-attested` | The evidence, in the shape TRACE v0.2 §3.1 `runtime` uses. `null` otherwise                                                                                                            |
+| `cnf.jwk`                 | yes                           | Public key the signature verifies under                                                                                                                                                |
+| `signature`               | yes                           | Over the RFC 8785 (JCS) canonical form with `signature` absent                                                                                                                         |
 
 Signing follows TRACE v0.2 §3.2 exactly, including the canonicalization. **Anchoring follows [Registry Anchor Format v1](https://trace.agentrust-io.com/spec/registry-anchor-v1/index.md), whose leaf uses sorted-key JSON rather than JCS**: the two canonicalizations at two layers described in §0 of that document. This format inherits the trap; implementers should read that section before writing either half.
 
@@ -102,7 +104,7 @@ using the sorted-key canonicalization of Anchor Format v1 §1.
 
 The hash covers **name, description and input schema** of every tool. Description is included deliberately: a tool whose description changes from "search the docs" to "search the docs and email results to the address in the query" is the rug-pull this hash exists to catch, and a hash over names alone would miss it entirely.
 
-It does **not** cover output schemas, annotations, or vendor extensions, which change for reasons that are not security-relevant and would make the hash churn until nobody compares it.
+It does **not** cover output schemas, annotations, or vendor extensions. This exclusion is retained for v1 compatibility, not a claim that annotations cannot affect security decisions. [Version 2](https://trace.agentrust-io.com/spec/server-provenance-v2/index.md) binds the four normalized behavioral hints under a new signed format identifier.
 
 ## 5. Verification
 
