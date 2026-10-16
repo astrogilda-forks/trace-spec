@@ -7,7 +7,7 @@ name: Anchor corpus
 
 on:
   push:
-    branches: [main]
+    branches: [main, "proof/**"]
     paths:
       - "conformance/src/trace_tests/modules/tr_anc.py"
       - "conformance/src/trace_tests/inclusion.py"
